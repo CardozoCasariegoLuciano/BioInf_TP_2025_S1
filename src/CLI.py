@@ -3,7 +3,10 @@ import sys
 import re
 from .messages_manager import messages_manager
 
-
+"""
+Valida los args de entrada antes de iniciar con el llamado a las
+bases de datos
+"""
 @click.command()
 @click.argument("pdb", nargs=-1, type=str)
 @click.option("--pdb-file", help="path del archivo contenedor de PBDs en texto plano, ignora comentarios con #")

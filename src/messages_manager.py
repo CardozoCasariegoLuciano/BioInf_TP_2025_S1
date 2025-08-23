@@ -1,8 +1,6 @@
 import click
 
-
 class ErrorMessages:
-
     def Error_invalid_PDB(self):
         click.secho("Uno o mas codigos PDB ingresado no cumple el formato", fg="red", bold=True)
 
@@ -14,6 +12,5 @@ class ErrorMessages:
 
     def Error_Filter_does_not_exist(self, filter):
         click.secho("Filtro " + filter + " invalido. los permitidos son: Kd, Ki y IC50", fg="red", bold=True)
-
 
 messages_manager = ErrorMessages()
