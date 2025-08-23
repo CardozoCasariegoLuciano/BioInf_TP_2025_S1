@@ -4,8 +4,8 @@ import re
 from .messages_manager import messages_manager
 
 """
-Valida los args de entrada antes de iniciar con el llamado a las
 bases de datos
+Valida los args de entrada antes de iniciar con el llamado a las
 """
 @click.command()
 @click.argument("pdb", nargs=-1, type=str)
