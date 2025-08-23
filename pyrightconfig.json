@@ -1,0 +1,16 @@
+{
+    "include": [
+        ".",
+        "src",
+        "lib"
+    ],
+    "exclude": [
+        "**/__pycache__",
+        "venv",
+        ".venv",
+        "env"
+    ],
+    "stubPath": "./stubs",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": false
+}
