@@ -1,3 +1,5 @@
 Guia_conda.txt
+output/
+example.txt
 __pycache__/
 *.pyc

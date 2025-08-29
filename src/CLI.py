@@ -2,6 +2,8 @@ from io import TextIOWrapper
 import click
 import sys
 import re
+
+from src.API import create_output_from_APIs
 from .messages_manager import messages_manager
 
 """
@@ -23,11 +25,8 @@ def process_data(pdb, pdb_file, ligands, ligands_file, filters):
     Ligands = unify_and_validate_codes(list(set(ligands)),ligands_file)
     Filter = validate_filters_or_exit(list(set(filters)))
 
-    print("PDBs" ,PDBs)
-    print("Ligandos" ,Ligands)
-    print("filters", Filter)
+    create_output_from_APIs(PDBs, Ligands, Filter)
 
-    #TODO hacer los llamados a las distintas bases de datos
 
 
 def unify_and_validate_codes(codes: list[str], file: TextIOWrapper , validate_PDB = False) -> list[str]:
