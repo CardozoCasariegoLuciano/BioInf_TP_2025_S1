@@ -1,25 +1,25 @@
 import json
 import os
+import sys
 from typing import Dict
 import requests
-
-URLS_1 = "https://data.rcsb.org/rest/v1/core/entry/{pdb_id}" # Informacion general del PDB
-URLS_2 = "https://bindingdb.org/rest/getLigandsByPDBs?pdb=1MQ8&response=application/json" #Informacion de los ligandos
-URLS_3 = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=8145218&retmode=json" #El id lo saco del URLS_2
-
-#TODO manejar los mensajes miestras busca
-#TODO Tests
-#TODO mostrar todos los ligandos del URL2 que indiquen los filtros
-#TODO Mostrar solo los ligandos que se indiquen en el input
-#TODO crear el archivo output
+import click
+from .messages_manager import messages_manager
+from src.spinner import Spinner
 
 def create_output_from_APIs(pdbs, ligands, filters):
     for pdb in pdbs:
-        pdb_data =get_data_from_RCSB(pdb)
-        pdb_ligands =get_data_from_bindingPDB(pdb)
-        final_data = pdb_data | pdb_ligands
-        create_output_file(pdb, final_data)
+        click.secho("Buscando informacion de PDB: " + pdb, bold=False)
+        pdb_data = get_data_from_RCSB(pdb)
 
+        spinner = Spinner("⏳ Buscando ligandos")
+        spinner.start()
+        pdb_ligands = get_data_from_bindingPDB(pdb, ligands, filters)
+        spinner.stop()
+
+        final_data = pdb_data | pdb_ligands
+        file_name = create_output_file(pdb, final_data)
+        click.secho("Archivo generado correctamente: " + file_name , fg="green", bold=False)
 
 def get_data_from_RCSB (pdb) -> Dict:
     url = "https://data.rcsb.org/rest/v1/core/entry/" + pdb
@@ -28,41 +28,61 @@ def get_data_from_RCSB (pdb) -> Dict:
         if(resp.status_code == 200):
             data = resp.json()
 
+            year = data.get("citation", [{}])[0].get("year", "Year no find")
+
             resp = {
                 "PDB": pdb,
-                "Year": data["citation"][0].get("year"),
+                "Year": year,
                 "Sources" : "RCSB, BindingPDB",
                 "Uniprot id": None,
                 "ChEMBL id": None
             }
             return resp
         else:
-            print("rompe antes ")
-            return {}
+            messages_manager.Error_response_not_OK()
+            sys.exit(1)
     except Exception as e:
-        print("error", e)
-        return {}
+        messages_manager.Error_response_not_OK(e)
+        sys.exit(1)
 
-def get_data_from_bindingPDB (pdb) -> Dict[str,str]:
+def get_data_from_bindingPDB (pdb, input_ligands, input_filters) -> Dict[str, list]:
     url = "https://bindingdb.org/rest/getLigandsByPDBs?pdb=" + pdb + "&response=application/json"
     resp = requests.get(url)
     try:
         if(resp.status_code == 200):
             data = resp.json()
 
+            ligands_data = data.get("getLindsByPDBsResponse", {}).get("affinities", {})
+            filtered_ligands = []
+
+            if not input_filters and not input_ligands:
+                filtered_ligands = ligands_data
+            else:
+                for lig in ligands_data:
+                    monomerid = lig.get("monomerid")
+                    affinity_type = lig.get("affinity_type")
+
+                    if input_ligands and monomerid in input_ligands:
+                        filtered_ligands.append(lig)
+                    if input_filters and affinity_type in input_filters:
+                        filtered_ligands.append(lig)
+
             resp = {
-                "ligands": data.get("getLindsByPDBsResponse").get("affinities")
+                "ligands":filtered_ligands
             }
             return resp
         else:
-            print("rompe antes ")
-            return {}
+            messages_manager.Error_response_not_OK()
+            sys.exit(1)
     except Exception as e:
-            print("error", e)
-            return {}
+            messages_manager.Error_response_not_OK(e)
+            sys.exit(1)
 
-def create_output_file(pdb, data):
+def create_output_file(pdb, data) -> str:
     os.makedirs("output", exist_ok=True)
-    with open("output/PDB_" + pdb + ".json", "w") as f:
+    file_name = "output/PDB_" + pdb + ".json"
+    with open(file_name, "w") as f:
       json.dump(data, f, indent=4)
+    return file_name
+
 

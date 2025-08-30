@@ -5,4 +5,3 @@ if __name__ == "__main__":
 
     #TODO Hacer la wiki de github
     #TODO hacer bien detallado el readme
-    #TODO agregar los tests

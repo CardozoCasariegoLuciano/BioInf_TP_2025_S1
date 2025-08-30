@@ -16,5 +16,10 @@ class ErrorMessages:
     def Error_Empty_file(self):
         click.secho("El archivo no contiene codigos que pueda leer", fg="red", bold=True)
 
+    def Error_response_not_OK(self, e=None):
+        click.secho("Error al obeneter la informacion", fg="red", bold=True)
+        if(e):
+            click.secho(e, bold=False)
+
 
 messages_manager = ErrorMessages()

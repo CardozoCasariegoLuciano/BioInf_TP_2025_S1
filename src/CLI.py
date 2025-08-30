@@ -86,5 +86,5 @@ def validate_filters_or_exit(filters: list[str]):
                 sys.exit(1)
         return filters
     else:
-        return values
+        return []
 
